@@ -103,7 +103,7 @@ export default function ProductDetailPage() {
                     const list = (data.products as Product[])
                         .filter(p => p.categoryId === product.categoryId)
                         .filter(p => p.id !== product.id)
-                        // .filter(p => p.stock > 0) // Optional: only show in-stock items
+                        .filter(p => p.stock > 0)
                         .slice(0, 4);
 
                     setSimilarProducts(list);
