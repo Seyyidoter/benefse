@@ -37,3 +37,9 @@ export const categories: Category[] = [
         image: 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=400&h=400&fit=crop',
     },
 ];
+
+// Helper function to get category by slug
+export function getCategoryBySlug(slug: string): Category | undefined {
+    return categories.find((c) => c.slug === slug);
+}
+
