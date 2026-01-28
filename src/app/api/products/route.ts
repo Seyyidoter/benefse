@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const useMock = searchParams.get('mock') === 'true';
-    const size = parseInt(searchParams.get('size') || '100');
-    const pageKey = searchParams.get('pageKey') || undefined;
+    const page = parseInt(searchParams.get('page') || '0');
+    const size = parseInt(searchParams.get('size') || '50');
 
     // If mock mode requested
     if (useMock) {
@@ -16,6 +16,8 @@ export async function GET(request: Request) {
             products: mockProducts,
             pagination: {
                 total: mockProducts.length,
+                page: 0,
+                totalPages: 1,
             },
             source: 'mock',
         });
@@ -23,17 +25,24 @@ export async function GET(request: Request) {
 
     try {
         console.log('Attempting to fetch from Trendyol API...');
+        console.log('Environment check:', {
+            hasSupplierId: !!process.env.TRENDYOL_SUPPLIER_ID,
+            hasApiKey: !!process.env.TRENDYOL_API_KEY,
+            hasApiSecret: !!process.env.TRENDYOL_API_SECRET,
+        });
 
-        const result = await fetchTrendyolProducts(size, pageKey);
-        const products = result.products.map(convertTrendyolProduct);
+        const result = await fetchTrendyolProducts(page, size);
+        const products = result.content.map(convertTrendyolProduct);
 
         console.log(`Successfully fetched ${products.length} products from Trendyol`);
 
         return NextResponse.json({
             products,
             pagination: {
-                total: products.length,
-                nextPageKey: result.nextPageKey,
+                total: result.totalElements,
+                page: result.page,
+                totalPages: result.totalPages,
+                size: result.size,
             },
             source: 'trendyol',
         });
@@ -49,6 +58,8 @@ export async function GET(request: Request) {
             products: mockProducts,
             pagination: {
                 total: mockProducts.length,
+                page: 0,
+                totalPages: 1,
             },
             source: 'mock-fallback',
             error: errorMessage,
