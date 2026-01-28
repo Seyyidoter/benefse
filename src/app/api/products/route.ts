@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     const useMock = searchParams.get('mock') === 'true';
     const page = parseInt(searchParams.get('page') || '0');
     const size = parseInt(searchParams.get('size') || '50');
+    const barcode = searchParams.get('barcode') || undefined;
 
     // If mock mode requested
     if (useMock) {
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
             hasApiSecret: !!process.env.TRENDYOL_API_SECRET,
         });
 
-        const result = await fetchTrendyolProducts(page, size);
+        const result = await fetchTrendyolProducts(page, size, barcode);
         const products = result.content.map(convertTrendyolProduct);
 
         console.log(`Successfully fetched ${products.length} products from Trendyol`);

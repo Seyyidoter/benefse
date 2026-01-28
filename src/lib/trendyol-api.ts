@@ -82,6 +82,7 @@ function getAuthHeaders(config: TrendyolConfig): HeadersInit {
 export async function fetchTrendyolProducts(
     page: number = 0,
     size: number = 50,
+    barcode?: string,
     approved: boolean = true
 ): Promise<TrendyolProductsResponse> {
     const config = getConfig();
@@ -94,6 +95,10 @@ export async function fetchTrendyolProducts(
         approved: approved.toString(),
         supplierId: config.supplierId,
     });
+
+    if (barcode) {
+        params.append('barcode', barcode);
+    }
 
     // Correct endpoint for Türkiye Marketplace
     const url = `${TRENDYOL_API_BASE}/product/sellers/${config.supplierId}/products?${params}`;
@@ -122,7 +127,7 @@ export async function fetchAllTrendyolProducts(): Promise<TrendyolProduct[]> {
     const maxPages = 10; // Safety limit
 
     do {
-        const result = await fetchTrendyolProducts(page, 50);
+        const result = await fetchTrendyolProducts(page, 50, undefined);
         allProducts.push(...result.content);
 
         console.log(`Fetched page ${page + 1}/${result.totalPages}, got ${result.content.length} products, total: ${allProducts.length}`);

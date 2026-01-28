@@ -49,16 +49,35 @@ export default function ProductDetailPage() {
         const loadProduct = async () => {
             setLoading(true);
             try {
-                const adapter = getCatalogAdapter();
-                const p = await adapter.fetchProductById(productId);
-                setProduct(p);
+                // Fetch product by barcode (ID) from our API which proxies to Trendyol
+                const response = await fetch(`/api/products?barcode=${productId}`);
 
-                // Select first variant if exists
-                if (p?.variants && p.variants.length > 0) {
-                    setSelectedVariant(p.variants[0].id);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch product');
+                }
+
+                const data = await response.json();
+
+                // API returns a list (because filter endpoint returns a list), 
+                // so we take the first item if matches
+                if (data.products && data.products.length > 0) {
+                    setProduct(data.products[0]);
+                } else {
+                    // If not found in API, try to find in static mock data as fallback
+                    // This is useful for dev or if API fails
+                    const mockProduct = products.find(p => p.id === productId);
+                    if (mockProduct) {
+                        setProduct(mockProduct);
+                    } else {
+                        setProduct(null);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load product:', error);
+
+                // Fallback to mock data
+                const mockProduct = products.find(p => p.id === productId);
+                setProduct(mockProduct || null);
             } finally {
                 setLoading(false);
             }
