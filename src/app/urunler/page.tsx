@@ -210,21 +210,7 @@ function ProductsContent() {
                 </div>
             </div>
 
-            <Separator />
 
-            {/* In Stock */}
-            <div className="flex items-center gap-2">
-                <Checkbox
-                    id="inStock"
-                    checked={filters.inStock}
-                    onCheckedChange={(checked) => updateFilters({ inStock: !!checked })}
-                />
-                <Label htmlFor="inStock" className="text-sm cursor-pointer">
-                    Sadece stokta olanlar
-                </Label>
-            </div>
-
-            <Separator />
 
             {/* Clear Filters */}
             {activeFilterCount > 0 && (
