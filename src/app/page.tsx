@@ -299,6 +299,8 @@ export default async function HomePage() {
             </p>
             <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input
+                id="newsletter-email"
+                name="email"
                 type="email"
                 placeholder="E-posta adresiniz"
                 className="flex-1 px-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-[#e91e8c]"

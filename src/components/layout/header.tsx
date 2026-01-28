@@ -142,6 +142,8 @@ export function Header() {
                         <div className="relative w-full">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
+                                id="search-desktop"
+                                name="q"
                                 type="search"
                                 placeholder="Ürün ara..."
                                 className="w-full pl-10 bg-muted/50 border-0 focus-visible:ring-[#e91e8c]"
@@ -204,6 +206,8 @@ export function Header() {
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                         <Input
+                                            id="search-mobile"
+                                            name="q"
                                             type="search"
                                             placeholder="Ürün ara..."
                                             className="w-full pl-10"
