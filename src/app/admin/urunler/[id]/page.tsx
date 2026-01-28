@@ -39,15 +39,15 @@ const productSchema = z.object({
     description: z.string().min(10, 'Açıklama en az 10 karakter olmalı'),
     brand: z.string().min(1, 'Marka seçin'),
     categoryId: z.string().min(1, 'Kategori seçin'),
-    price: z.coerce.number().positive('Fiyat 0\'dan büyük olmalı'),
-    salePrice: z.coerce.number().optional(),
-    stock: z.coerce.number().int().min(0, 'Stok 0 veya daha fazla olmalı'),
+    price: z.union([z.number(), z.string()]).transform((val) => Number(val) || 0),
+    salePrice: z.union([z.number(), z.string(), z.undefined()]).optional().transform((val) => val ? Number(val) : undefined),
+    stock: z.union([z.number(), z.string()]).transform((val) => Number(val) || 0),
     sku: z.string().min(1, 'SKU gerekli'),
     barcode: z.string().optional(),
     isActive: z.boolean().default(true),
 });
 
-type ProductFormData = z.infer<typeof productSchema>;
+type ProductFormData = z.input<typeof productSchema>;
 
 export default function EditProductPage() {
     const router = useRouter();
@@ -144,9 +144,11 @@ export default function EditProductPage() {
 
             await adapter.updateProduct(productId, {
                 ...data,
+                price: Number(data.price),
+                stock: Number(data.stock),
                 images,
                 tags,
-                salePrice: data.salePrice || undefined,
+                salePrice: data.salePrice ? Number(data.salePrice) : undefined,
                 barcode: data.barcode || undefined,
             });
 

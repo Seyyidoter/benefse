@@ -76,9 +76,9 @@ export const products: Product[] = [
         ],
         tags: ['runner', 'masa örtüsü', 'keten', 'dantel', 'turuncu'],
         variants: [
-            { id: 'v-turuncu', name: 'Turuncu', stock: 10 },
-            { id: 'v-kirmizi', name: 'Kırmızı', stock: 10 },
-            { id: 'v-yesil', name: 'Yeşil', stock: 10 },
+            { id: 'v-turuncu', name: 'Renk', value: 'Turuncu', stock: 10 },
+            { id: 'v-kirmizi', name: 'Renk', value: 'Kırmızı', stock: 10 },
+            { id: 'v-yesil', name: 'Renk', value: 'Yeşil', stock: 10 },
         ],
         isActive: true,
         createdAt: new Date('2024-01-17'),
