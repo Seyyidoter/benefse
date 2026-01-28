@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import {
     ChevronLeft,
     ChevronRight,
@@ -11,6 +12,7 @@ import {
     Truck,
     Check,
     AlertCircle,
+    LogIn,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,10 +31,11 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
-import { useCartStore, useOrderStore } from '@/store';
+import { useCartStore } from '@/store';
 import { shippingMethods, getFreeShippingEligibility } from '@/data/shipping';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { createOrder } from '@/lib/order-actions';
 
 // Address Schema
 const addressSchema = z.object({
@@ -56,18 +59,18 @@ const steps = [
 
 export default function CheckoutPage() {
     const router = useRouter();
+    const { data: session, status } = useSession();
     const { items, getSubtotal, couponDiscount, clearCart } = useCartStore();
-    const { startOrder, updateCustomerInfo, updateShippingMethod, saveDraft } = useOrderStore();
 
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedShipping, setSelectedShipping] = useState(shippingMethods[0].id);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [addressData, setAddressData] = useState<AddressFormData | null>(null);
 
     const subtotal = getSubtotal();
     const hasFreeShipping = getFreeShippingEligibility(subtotal);
     const selectedShippingMethod = shippingMethods.find((s) => s.id === selectedShipping);
 
-    // FIX: Allow both 'ship-3' (Free) and 'ship-1' (Standard) to be free if eligible
     const shippingCost = hasFreeShipping && (selectedShippingMethod?.id === 'ship-3' || selectedShippingMethod?.id === 'ship-1') ? 0 : (selectedShippingMethod?.price || 0);
 
     const discount = couponDiscount || 0;
@@ -78,7 +81,7 @@ export default function CheckoutPage() {
         defaultValues: {
             fullName: '',
             phone: '',
-            email: '',
+            email: session?.user?.email || '',
             city: '',
             district: '',
             neighborhood: '',
@@ -94,64 +97,107 @@ export default function CheckoutPage() {
         }
     }, [items.length, router]);
 
-    // Initialize order when entering checkout
+    // Pre-fill email if user is logged in
     useEffect(() => {
-        if (items.length > 0) {
-            startOrder(
-                items.map((item) => ({
+        if (session?.user?.email) {
+            form.setValue('email', session.user.email);
+        }
+        if (session?.user?.name) {
+            form.setValue('fullName', session.user.name);
+        }
+    }, [session, form]);
+
+    const handleAddressSubmit = (data: AddressFormData) => {
+        setAddressData(data);
+        setCurrentStep(2);
+    };
+
+    const handleShippingSubmit = () => {
+        setCurrentStep(3);
+    };
+
+    const handlePaymentSubmit = async () => {
+        // Check if user is logged in
+        if (!session?.user) {
+            toast.error('Giriş yapmalısınız', {
+                description: 'Sipariş vermek için lütfen giriş yapın veya kayıt olun.',
+            });
+            router.push(`/giris?callbackUrl=${encodeURIComponent('/checkout')}`);
+            return;
+        }
+
+        if (!addressData) {
+            toast.error('Adres bilgileri eksik');
+            setCurrentStep(1);
+            return;
+        }
+
+        setIsProcessing(true);
+
+        try {
+            const result = await createOrder({
+                items: items.map((item) => ({
                     productId: item.productId,
                     title: item.title,
                     price: item.salePrice || item.price,
                     quantity: item.quantity,
                     variantId: item.variantId,
                     variantName: item.variantName,
+                    imageUrl: item.image,
                 })),
-                {
-                    subtotal,
-                    shipping: shippingCost,
-                    discount,
-                }
-            );
-        }
-    }, [items, subtotal, shippingCost, discount, startOrder]);
+                address: addressData,
+                subtotal,
+                shipping: shippingCost,
+                discount,
+                total,
+            });
 
-    const handleAddressSubmit = (data: AddressFormData) => {
-        updateCustomerInfo(data);
-        setCurrentStep(2);
-    };
-
-    const handleShippingSubmit = () => {
-        updateShippingMethod(selectedShipping, shippingCost);
-        setCurrentStep(3);
-    };
-
-    const handlePaymentSubmit = () => {
-        setIsProcessing(true);
-
-        // Simulate payment processing
-        setTimeout(() => {
-            const savedDraft = saveDraft();
-
-            if (savedDraft) {
+            if (result.success && result.orderId) {
                 clearCart();
-                toast.success('Sipariş taslağı kaydedildi!', {
-                    description: `Sipariş No: ${savedDraft.id}`,
+                toast.success('Siparişiniz alındı!', {
+                    description: `Sipariş No: #${result.orderId.slice(-8).toUpperCase()}`,
                 });
-                router.push(`/siparis-onay?id=${savedDraft.id}`);
+                router.push(`/siparis-onay?id=${result.orderId}`);
             } else {
-                toast.error('Sipariş oluşturulamadı');
+                toast.error(result.error || 'Sipariş oluşturulamadı');
             }
-
+        } catch {
+            toast.error('Bir hata oluştu. Lütfen tekrar deneyin.');
+        } finally {
             setIsProcessing(false);
-        }, 1500);
+        }
     };
 
     if (items.length === 0) {
         return null;
     }
 
+    const isAuthenticated = status === 'authenticated';
+
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
+            {/* Auth Warning */}
+            {!isAuthenticated && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                        <LogIn className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <h4 className="font-medium text-blue-800 dark:text-blue-200">
+                                Giriş Yapmanız Önerilir
+                            </h4>
+                            <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                                Siparişinizi tamamlamak ve takip edebilmek için giriş yapın veya kayıt olun.
+                            </p>
+                        </div>
+                        <Link href={`/giris?callbackUrl=${encodeURIComponent('/checkout')}`}>
+                            <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                                Giriş Yap
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {/* Progress Steps */}
             <div className="max-w-2xl mx-auto mb-8">
                 <div className="flex items-center justify-between">
@@ -363,7 +409,6 @@ export default function CheckoutPage() {
                                     className="space-y-4"
                                 >
                                     {shippingMethods.map((method) => {
-                                        // FIX: Enable free shipping for standard shipping too
                                         const isFreeEligible =
                                             (method.id === 'ship-3' || method.id === 'ship-1') && hasFreeShipping;
                                         const displayPrice = isFreeEligible ? 0 : method.price;
@@ -459,11 +504,34 @@ export default function CheckoutPage() {
                                             </h4>
                                             <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
                                                 Ödeme sistemi şu anda demo modundadır. Gerçek ödeme
-                                                alınmamaktadır. Siparişiniz taslak olarak kaydedilecektir.
+                                                alınmamaktadır. Siparişiniz hesabınıza kaydedilecektir.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Auth Check */}
+                                {!isAuthenticated && (
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                                        <div className="flex items-start gap-3">
+                                            <LogIn className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                            <div className="flex-1">
+                                                <h4 className="font-medium text-blue-800 dark:text-blue-200">
+                                                    Giriş Gerekli
+                                                </h4>
+                                                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                                                    Siparişinizi tamamlamak için giriş yapmalısınız.
+                                                </p>
+                                                <Link href={`/giris?callbackUrl=${encodeURIComponent('/checkout')}`}>
+                                                    <Button size="sm" className="mt-3" variant="default">
+                                                        <LogIn className="w-4 h-4 mr-2" />
+                                                        Giriş Yap
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Fake Payment Form */}
                                 <div className="space-y-4 opacity-50 pointer-events-none">
@@ -490,7 +558,7 @@ export default function CheckoutPage() {
                                     </Button>
                                     <Button
                                         onClick={handlePaymentSubmit}
-                                        disabled={isProcessing}
+                                        disabled={isProcessing || !isAuthenticated}
                                         className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600"
                                     >
                                         {isProcessing ? (
@@ -500,7 +568,7 @@ export default function CheckoutPage() {
                                             </>
                                         ) : (
                                             <>
-                                                Siparişi Tamamla (Demo)
+                                                Siparişi Tamamla
                                                 <Check className="w-4 h-4 ml-2" />
                                             </>
                                         )}

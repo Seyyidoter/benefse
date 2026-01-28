@@ -1,40 +1,50 @@
-'use client';
-
-import { User, Package, Heart, MapPin, Settings, LogIn } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { User, Package, Heart, MapPin, Settings, LogOut, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useOrderStore } from '@/store';
-import { useHydrated } from '@/hooks/use-hydrated';
+import { auth } from '@/auth';
+import { getUserOrders } from '@/lib/order-actions';
+import { LogoutButton } from '@/components/auth/logout-button';
 
-export default function AccountPage() {
-    const { drafts } = useOrderStore();
-    const hydrated = useHydrated();
+// Status badge colors
+const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className?: string }> = {
+    PENDING: { label: 'Beklemede', variant: 'secondary', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+    PAID: { label: 'Ödendi', variant: 'secondary', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+    PROCESSING: { label: 'Hazırlanıyor', variant: 'secondary', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
+    SHIPPED: { label: 'Kargoda', variant: 'secondary', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' },
+    DELIVERED: { label: 'Teslim Edildi', variant: 'secondary', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+    CANCELLED: { label: 'İptal Edildi', variant: 'destructive' },
+};
+
+export default async function AccountPage() {
+    const session = await auth();
+
+    // Redirect to login if not authenticated
+    if (!session?.user) {
+        redirect('/giris?callbackUrl=/hesabim');
+    }
+
+    const orders = await getUserOrders();
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-8">Hesabım</h1>
-
-            {/* Demo Notice */}
-            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-8">
-                <div className="flex items-start gap-3">
-                    <LogIn className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                        <h4 className="font-medium text-orange-800 dark:text-orange-200">
-                            Demo Modu - Giriş Yapılmadı
-                        </h4>
-                        <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
-                            Kullanıcı girişi şu anda demo modunda devre dışıdır. Canlıya geçişte
-                            NextAuth.js veya Clerk ile kimlik doğrulama eklenecektir.
-                        </p>
-                    </div>
+            {/* User Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-bold">Hesabım</h1>
+                    <p className="text-muted-foreground mt-1">
+                        Hoş geldin, <span className="font-medium text-foreground">{session.user.name || session.user.email}</span>
+                    </p>
                 </div>
+                <LogoutButton />
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
                 {/* Menu Cards */}
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                     <CardContent className="p-6 flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
                             <User className="h-6 w-6 text-purple-600" />
@@ -42,7 +52,7 @@ export default function AccountPage() {
                         <div>
                             <h3 className="font-semibold">Profil Bilgileri</h3>
                             <p className="text-sm text-muted-foreground">
-                                Kişisel bilgilerinizi düzenleyin
+                                {session.user.email}
                             </p>
                         </div>
                     </CardContent>
@@ -75,111 +85,113 @@ export default function AccountPage() {
                         </div>
                     </CardContent>
                 </Card>
-
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">
-                    <CardContent className="p-6 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
-                            <Settings className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold">Ayarlar</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Hesap ayarlarınız
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
 
-            {/* Order Drafts */}
+            {/* Orders Section */}
             <div className="mt-12">
                 <div className="flex items-center gap-3 mb-6">
                     <Package className="h-6 w-6" />
-                    <h2 className="text-2xl font-bold">Sipariş Taslakları</h2>
-                    <Badge variant="secondary">{hydrated ? drafts.length : 0}</Badge>
+                    <h2 className="text-2xl font-bold">Siparişlerim</h2>
+                    <Badge variant="secondary">{orders.length}</Badge>
                 </div>
 
-                {drafts.length === 0 ? (
+                {orders.length === 0 ? (
                     <Card>
                         <CardContent className="p-8 text-center">
-                            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                            <p className="text-muted-foreground">
-                                Henüz sipariş taslağınız bulunmuyor.
+                            <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground mb-4">
+                                Henüz siparişiniz bulunmuyor.
                             </p>
+                            <Link href="/urunler">
+                                <Button className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600">
+                                    Alışverişe Başla
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                 ) : (
                     <div className="space-y-4">
-                        {drafts.map((draft) => (
-                            <Card key={draft.id}>
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="text-base font-medium">
-                                            {draft.id}
-                                        </CardTitle>
-                                        <Badge
-                                            variant="secondary"
-                                            className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
-                                        >
-                                            Taslak
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid md:grid-cols-3 gap-4 text-sm">
-                                        <div>
-                                            <p className="text-muted-foreground">Müşteri</p>
-                                            <p className="font-medium">{draft.customerInfo.fullName}</p>
+                        {orders.map((order) => {
+                            const status = statusConfig[order.status] || statusConfig.PENDING;
+                            return (
+                                <Card key={order.id}>
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-center justify-between flex-wrap gap-2">
+                                            <CardTitle className="text-base font-medium font-mono">
+                                                #{order.id.slice(-8).toUpperCase()}
+                                            </CardTitle>
+                                            <Badge variant={status.variant} className={status.className}>
+                                                {status.label}
+                                            </Badge>
                                         </div>
-                                        <div>
-                                            <p className="text-muted-foreground">Ürün Sayısı</p>
-                                            <p className="font-medium">{draft.items.length} ürün</p>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid md:grid-cols-4 gap-4 text-sm">
+                                            <div>
+                                                <p className="text-muted-foreground">Tarih</p>
+                                                <p className="font-medium">
+                                                    {new Date(order.createdAt).toLocaleDateString('tr-TR', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                    })}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Ürün Sayısı</p>
+                                                <p className="font-medium">{order.items.length} ürün</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Teslimat</p>
+                                                <p className="font-medium">{order.address?.city}, {order.address?.district}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Toplam</p>
+                                                <p className="font-medium text-purple-600">
+                                                    {order.total.toLocaleString('tr-TR', {
+                                                        style: 'currency',
+                                                        currency: 'TRY',
+                                                    })}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-muted-foreground">Toplam</p>
-                                            <p className="font-medium text-purple-600">
-                                                {draft.totals.total.toLocaleString('tr-TR', {
-                                                    style: 'currency',
-                                                    currency: 'TRY',
-                                                })}
+
+                                        <Separator className="my-4" />
+
+                                        {/* Order Items Preview */}
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {order.items.slice(0, 3).map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="text-xs bg-muted px-2 py-1 rounded"
+                                                >
+                                                    {item.title.slice(0, 30)}...
+                                                    {item.quantity > 1 && ` x${item.quantity}`}
+                                                </div>
+                                            ))}
+                                            {order.items.length > 3 && (
+                                                <div className="text-xs bg-muted px-2 py-1 rounded">
+                                                    +{order.items.length - 3} ürün daha
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-xs text-muted-foreground">
+                                                Sipariş ID: {order.id}
                                             </p>
+                                            <Link href={`/hesabim/siparis/${order.id}`}>
+                                                <Button variant="outline" size="sm">
+                                                    Detaylar
+                                                </Button>
+                                            </Link>
                                         </div>
-                                    </div>
-
-                                    <Separator className="my-4" />
-
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-xs text-muted-foreground">
-                                            Oluşturulma: {new Date(draft.createdAt).toLocaleString('tr-TR')}
-                                        </p>
-                                        <Button variant="outline" size="sm" disabled>
-                                            Detaylar (Demo)
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
                 )}
-            </div>
-
-            {/* Auth Placeholder */}
-            <div className="mt-12">
-                <Card className="bg-muted/50">
-                    <CardContent className="p-6 text-center">
-                        <h3 className="font-semibold mb-2">Giriş Yap / Kayıt Ol</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Demo modunda kullanıcı girişi devre dışıdır. Canlı sürümde
-                            bu özellik aktif olacaktır.
-                        </p>
-                        <div className="flex gap-4 justify-center">
-                            <Button disabled>Giriş Yap</Button>
-                            <Button variant="outline" disabled>
-                                Kayıt Ol
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </div>
     );

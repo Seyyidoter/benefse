@@ -36,6 +36,7 @@ import { categories } from '@/data/categories';
 import { cn } from '@/lib/utils';
 
 import { useHydrated } from '@/hooks/use-hydrated';
+import { UserMenu } from '@/components/auth/user-menu';
 
 export function Header() {
     const hydrated = useHydrated();
@@ -163,11 +164,7 @@ export function Header() {
                         </Button>
 
                         {/* Account */}
-                        <Link href="/hesabim">
-                            <Button variant="ghost" size="icon">
-                                <User className="h-5 w-5" />
-                            </Button>
-                        </Link>
+                        <UserMenu />
 
                         {/* Cart */}
                         <Link href="/sepet">
