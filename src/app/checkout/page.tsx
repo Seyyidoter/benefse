@@ -226,7 +226,7 @@ export default function CheckoutPage() {
                                                     <FormItem>
                                                         <FormLabel>Ad Soyad</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Adınız Soyadınız" {...field} />
+                                                            <Input placeholder="Adınız Soyadınız" autoComplete="name" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -239,7 +239,7 @@ export default function CheckoutPage() {
                                                     <FormItem>
                                                         <FormLabel>Telefon</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="05XX XXX XX XX" {...field} />
+                                                            <Input placeholder="05XX XXX XX XX" autoComplete="tel" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -257,6 +257,7 @@ export default function CheckoutPage() {
                                                         <Input
                                                             type="email"
                                                             placeholder="ornek@email.com"
+                                                            autoComplete="email"
                                                             {...field}
                                                         />
                                                     </FormControl>
@@ -273,7 +274,7 @@ export default function CheckoutPage() {
                                                     <FormItem>
                                                         <FormLabel>Şehir</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="İstanbul" {...field} />
+                                                            <Input placeholder="İstanbul" autoComplete="address-level1" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -286,7 +287,7 @@ export default function CheckoutPage() {
                                                     <FormItem>
                                                         <FormLabel>İlçe</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Kadıköy" {...field} />
+                                                            <Input placeholder="Kadıköy" autoComplete="address-level2" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -299,7 +300,7 @@ export default function CheckoutPage() {
                                                     <FormItem>
                                                         <FormLabel>Mahalle</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Caferağa" {...field} />
+                                                            <Input placeholder="Caferağa" autoComplete="address-level3" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -316,6 +317,7 @@ export default function CheckoutPage() {
                                                     <FormControl>
                                                         <Input
                                                             placeholder="Sokak, bina no, daire no..."
+                                                            autoComplete="street-address"
                                                             {...field}
                                                         />
                                                     </FormControl>
@@ -466,17 +468,17 @@ export default function CheckoutPage() {
                                 {/* Fake Payment Form */}
                                 <div className="space-y-4 opacity-50 pointer-events-none">
                                     <div>
-                                        <Label>Kart Numarası</Label>
-                                        <Input placeholder="XXXX XXXX XXXX XXXX" disabled />
+                                        <Label htmlFor="cardNumber">Kart Numarası</Label>
+                                        <Input id="cardNumber" placeholder="XXXX XXXX XXXX XXXX" autoComplete="cc-number" disabled />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <Label>Son Kullanma</Label>
-                                            <Input placeholder="AA/YY" disabled />
+                                            <Label htmlFor="cardExpiry">Son Kullanma</Label>
+                                            <Input id="cardExpiry" placeholder="AA/YY" autoComplete="cc-exp" disabled />
                                         </div>
                                         <div>
-                                            <Label>CVV</Label>
-                                            <Input placeholder="XXX" disabled />
+                                            <Label htmlFor="cardCvv">CVV</Label>
+                                            <Input id="cardCvv" placeholder="XXX" autoComplete="cc-csc" disabled />
                                         </div>
                                     </div>
                                 </div>

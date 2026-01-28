@@ -146,6 +146,7 @@ export function Header() {
                                 id="search-desktop"
                                 name="q"
                                 type="search"
+                                autoComplete="off"
                                 placeholder="Ürün ara..."
                                 className="w-full pl-10 bg-muted/50 border-0 focus-visible:ring-[#e91e8c]"
                                 value={searchQuery}
@@ -213,6 +214,7 @@ export function Header() {
                                             id="search-mobile"
                                             name="q"
                                             type="search"
+                                            autoComplete="off"
                                             placeholder="Ürün ara..."
                                             className="w-full pl-10"
                                             value={searchQuery}

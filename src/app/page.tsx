@@ -302,6 +302,7 @@ export default async function HomePage() {
                 id="newsletter-email"
                 name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="E-posta adresiniz"
                 className="flex-1 px-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-[#e91e8c]"
               />

@@ -101,6 +101,7 @@ export function MobileNav() {
                                                     className="w-full pl-10 h-12 bg-muted/50"
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
+                                                    autoComplete="off"
                                                 />
                                             </form>
 
