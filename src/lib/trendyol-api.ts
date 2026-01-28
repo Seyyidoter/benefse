@@ -123,19 +123,39 @@ export async function fetchTrendyolProducts(
 
 export async function fetchAllTrendyolProducts(): Promise<TrendyolProduct[]> {
     const allProducts: TrendyolProduct[] = [];
-    let page = 0;
-    const maxPages = 25; // Safety limit (covers up to 1250 products with size 50)
+    const size = 50;
+    const maxPagesLimit = 25; // Safety limit
 
-    do {
-        const result = await fetchTrendyolProducts(page, 50, undefined);
-        allProducts.push(...result.content);
+    try {
+        // 1. Fetch first page to know total pages
+        const firstPage = await fetchTrendyolProducts(0, size, undefined);
+        allProducts.push(...firstPage.content);
 
-        console.log(`Fetched page ${page + 1}/${result.totalPages}, got ${result.content.length} products, total: ${allProducts.length}`);
+        const totalPages = Math.min(firstPage.totalPages, maxPagesLimit);
 
-        page++;
+        if (totalPages <= 1) {
+            return allProducts;
+        }
 
-        if (page >= result.totalPages) break;
-    } while (page < maxPages);
+        console.log(`Fetching remaining ${totalPages - 1} pages in parallel...`);
+
+        // 2. Fetch remaining pages in parallel
+        const promises = [];
+        for (let page = 1; page < totalPages; page++) {
+            promises.push(fetchTrendyolProducts(page, size, undefined));
+        }
+
+        const results = await Promise.all(promises);
+        results.forEach(result => {
+            allProducts.push(...result.content);
+        });
+
+        console.log(`Fetched all pages. Total items: ${allProducts.length}`);
+
+    } catch (error) {
+        console.error('Error in fetchAllTrendyolProducts:', error);
+        // Continue with whatever data we have
+    }
 
     return allProducts;
 }
