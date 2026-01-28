@@ -13,11 +13,11 @@ export default async function HomePage() {
   let products = [];
 
   try {
-    const trendyolData = await fetchTrendyolProducts(0, 20);
-    products = trendyolData.content.map(convertTrendyolProduct);
+    const trendyolData = await fetchTrendyolProducts(0, 50); // Fetch more to ensure we have enough in-stock items
+    products = trendyolData.content.map(convertTrendyolProduct).filter(p => p.stock > 0);
   } catch (error) {
     console.error('Homepage fetch error, using mock data:', error);
-    products = mockProducts;
+    products = mockProducts.filter(p => p.stock > 0);
   }
 
   const featuredProducts = products.slice(0, 4);

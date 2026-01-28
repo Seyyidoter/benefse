@@ -54,7 +54,7 @@ function ProductsContent() {
             const response = await fetch('/api/products?size=100');
             const data = await response.json();
 
-            let filteredProducts = data.products as Product[];
+            let filteredProducts = (data.products as Product[]).filter(p => p.stock > 0);
 
             // Apply Filters Client-Side
             // 1. Search
@@ -79,10 +79,8 @@ function ProductsContent() {
                 filteredProducts = filteredProducts.filter(p => (p.salePrice || p.price) <= filters.maxPrice!);
             }
 
-            // 4. Stock
-            if (filters.inStock) {
-                filteredProducts = filteredProducts.filter(p => p.stock > 0);
-            }
+            // Stock filter is now applied by default, so we don't need explicit check here
+            // But we keep the loop structure clean
 
             // 5. Sort
             if (filters.sortBy) {
