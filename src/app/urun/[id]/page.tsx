@@ -394,9 +394,10 @@ export default function ProductDetailPage() {
                         <AccordionItem value="description">
                             <AccordionTrigger>Ürün Açıklaması</AccordionTrigger>
                             <AccordionContent>
-                                <p className="text-muted-foreground leading-relaxed">
-                                    {product.description}
-                                </p>
+                                <div
+                                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert"
+                                    dangerouslySetInnerHTML={{ __html: product.description }}
+                                />
                             </AccordionContent>
                         </AccordionItem>
                         <AccordionItem value="shipping">
