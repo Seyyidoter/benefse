@@ -405,6 +405,31 @@ export default function ProductDetailPage() {
                     </div>
                 </section>
             )}
+            {/* Mobile Sticky Add to Cart Bar */}
+            <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 bg-background border-t md:hidden safe-area-bottom shadow-[0_-5px_10px_rgba(0,0,0,0.05)] flex gap-4 items-center animate-in slide-in-from-bottom duration-300">
+                <div className="flex flex-col flex-shrink-0">
+                    <span className="text-xs text-muted-foreground">Fiyat</span>
+                    <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                        {displayPrice.toLocaleString('tr-TR', { style: 'currency', currency: product.currency })}
+                    </span>
+                </div>
+                <Button
+                    className={cn(
+                        'flex-1 gap-2 h-12 text-base font-semibold shadow-lg',
+                        isOutOfStock || variantOutOfStock
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white'
+                    )}
+                    onClick={handleAddToCart}
+                    disabled={isOutOfStock || variantOutOfStock}
+                >
+                    <ShoppingCart className="h-5 w-5" />
+                    {isOutOfStock || variantOutOfStock ? 'Tükendi' : 'Sepete Ekle'}
+                </Button>
+            </div>
+
+            {/* Spacer for sticky bar */}
+            <div className="h-24 md:hidden" />
         </div>
     );
 }
