@@ -2,14 +2,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/product';
 import { categories } from '@/data/categories';
-import { products } from '@/data/products';
+import { fetchTrendyolProducts, convertTrendyolProduct } from '@/lib/trendyol-api';
+import { products as mockProducts } from '@/data/products';
 
-export default function HomePage() {
-  const featuredProducts = products.filter((p) => p.salePrice && p.salePrice < p.price).slice(0, 4);
+export default async function HomePage() {
+  let products = [];
+
+  try {
+    const trendyolData = await fetchTrendyolProducts(0, 20);
+    products = trendyolData.content.map(convertTrendyolProduct);
+  } catch (error) {
+    console.error('Homepage fetch error, using mock data:', error);
+    products = mockProducts;
+  }
+
+  const featuredProducts = products.slice(0, 4);
   const newProducts = products.slice(-4);
 
   return (

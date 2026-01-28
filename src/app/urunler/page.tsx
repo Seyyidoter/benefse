@@ -49,10 +49,61 @@ function ProductsContent() {
     const loadProducts = useCallback(async () => {
         setLoading(true);
         try {
-            const adapter = getCatalogAdapter();
-            const result = await adapter.fetchProducts(filters, 1, 100);
-            setProducts(result.items);
-            setTotal(result.total);
+            // Fetch all products from API to perform client-side filtering
+            // In a real large-scale app, we would perform filtering on the backend
+            const response = await fetch('/api/products?size=100');
+            const data = await response.json();
+
+            let filteredProducts = data.products as Product[];
+
+            // Apply Filters Client-Side
+            // 1. Search
+            if (filters.search) {
+                const searchLower = filters.search.toLowerCase();
+                filteredProducts = filteredProducts.filter(p =>
+                    p.title.toLowerCase().includes(searchLower) ||
+                    p.description.toLowerCase().includes(searchLower)
+                );
+            }
+
+            // 2. Category
+            if (filters.categoryId) {
+                filteredProducts = filteredProducts.filter(p => p.categoryId === filters.categoryId);
+            }
+
+            // 3. Price
+            if (filters.minPrice !== undefined) {
+                filteredProducts = filteredProducts.filter(p => (p.salePrice || p.price) >= filters.minPrice!);
+            }
+            if (filters.maxPrice !== undefined) {
+                filteredProducts = filteredProducts.filter(p => (p.salePrice || p.price) <= filters.maxPrice!);
+            }
+
+            // 4. Stock
+            if (filters.inStock) {
+                filteredProducts = filteredProducts.filter(p => p.stock > 0);
+            }
+
+            // 5. Sort
+            if (filters.sortBy) {
+                switch (filters.sortBy) {
+                    case 'price-asc':
+                        filteredProducts.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
+                        break;
+                    case 'price-desc':
+                        filteredProducts.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
+                        break;
+                    case 'newest':
+                        filteredProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                        break;
+                    case 'name':
+                        filteredProducts.sort((a, b) => a.title.localeCompare(b.title, 'tr'));
+                        break;
+                }
+            }
+
+            setProducts(filteredProducts);
+            setTotal(filteredProducts.length);
         } catch (error) {
             console.error('Failed to load products:', error);
         } finally {
