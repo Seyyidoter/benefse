@@ -3,8 +3,9 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { ProductCard } from '@/components/product';
-import { products } from '@/data/products';
+import { fetchAllTrendyolProducts, convertTrendyolProduct } from '@/lib/trendyol-api';
 import { categories, getCategoryBySlug } from '@/data/categories';
+import { Product } from '@/types';
 
 interface CategoryPageProps {
     params: Promise<{ slug: string }>;
@@ -32,6 +33,9 @@ export function generateStaticParams() {
     }));
 }
 
+// Revalidate this page every hour to avoid hitting API limits and slow loads
+export const revalidate = 3600;
+
 export default async function CategoryPage({ params }: CategoryPageProps) {
     const { slug } = await params;
     const category = getCategoryBySlug(slug);
@@ -40,9 +44,20 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         notFound();
     }
 
-    const categoryProducts = products.filter(
-        (p) => p.categoryId === category.id && p.isActive
-    );
+    let categoryProducts: Product[] = [];
+
+    try {
+        console.log(`Fetching products for category: ${category.name} (${category.id})`);
+        const trendyolData = await fetchAllTrendyolProducts();
+
+        categoryProducts = trendyolData
+            .map(convertTrendyolProduct)
+            .filter((p) => p.categoryId === category.id && p.stock > 0);
+
+        console.log(`Found ${categoryProducts.length} products for category ${category.slug}`);
+    } catch (error) {
+        console.error('Error fetching category products:', error);
+    }
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">

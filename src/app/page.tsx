@@ -51,7 +51,7 @@ export default async function HomePage() {
                 </Button>
               </Link>
               <Link href="/kategori/runner-masa-ortusu">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#2a2a2a]">
+                <Button size="lg" variant="secondary" className="hover:bg-gray-100">
                   Yeni Koleksiyon
                 </Button>
               </Link>

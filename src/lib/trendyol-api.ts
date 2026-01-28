@@ -124,7 +124,7 @@ export async function fetchTrendyolProducts(
 export async function fetchAllTrendyolProducts(): Promise<TrendyolProduct[]> {
     const allProducts: TrendyolProduct[] = [];
     let page = 0;
-    const maxPages = 10; // Safety limit
+    const maxPages = 25; // Safety limit (covers up to 1250 products with size 50)
 
     do {
         const result = await fetchTrendyolProducts(page, 50, undefined);

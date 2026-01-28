@@ -6,35 +6,28 @@ export const categories: Category[] = [
         name: 'Mutfak Rafları',
         slug: 'mutfak-raflari',
         description: 'Şık ve fonksiyonel mutfak rafları, tezgah üstü organizatörler',
-        image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop',
+        image: 'https://cdn.dsmcdn.com/ty1816/prod/QC_PREP/20260126/21/473f7ed0-f747-3029-8e65-325c13c792a8/1_org_zoom.jpg',
     },
     {
         id: 'runner-masa-ortusu',
         name: 'Runner & Masa Örtüsü',
         slug: 'runner-masa-ortusu',
         description: 'El yapımı keten runner, dantel masa örtüleri ve servisler',
-        image: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=400&h=400&fit=crop',
+        image: 'https://cdn.dsmcdn.com/ty1703/prod/QC_PREP/20250702/15/8f903b88-5300-3981-b848-d30f7eaa2bde/1_org_zoom.jpg',
     },
     {
         id: 'lambalar',
         name: 'Masa & Gece Lambaları',
         slug: 'lambalar',
         description: 'Dekoratif masa lambaları ve modern gece lambaları',
-        image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&h=400&fit=crop',
+        image: 'https://cdn.dsmcdn.com/ty1813/prod/QC_PREP/20260121/23/7965425b-048b-31e7-9940-ec01c434629e/1_org_zoom.jpg',
     },
     {
         id: 'ev-aksesuarlari',
         name: 'Ev Aksesuarları',
         slug: 'ev-aksesuarlari',
         description: 'Dekoratif aksesuarlar, servis setleri ve ev düzenleme ürünleri',
-        image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&h=400&fit=crop',
-    },
-    {
-        id: 'laptop-sehpalari',
-        name: 'Laptop Sehpaları',
-        slug: 'laptop-sehpalari',
-        description: 'Ergonomik ve şık laptop sehpaları',
-        image: 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=400&h=400&fit=crop',
+        image: 'https://cdn.dsmcdn.com/ty1575/prod/QC/20241003/15/c8a0ad97-7dcb-3ff7-9c24-d754e60e4ddb/1_org_zoom.jpg',
     },
 ];
 
@@ -42,4 +35,3 @@ export const categories: Category[] = [
 export function getCategoryBySlug(slug: string): Category | undefined {
     return categories.find((c) => c.slug === slug);
 }
-
