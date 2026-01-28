@@ -42,6 +42,12 @@ export default function ProductDetailPage() {
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+    const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const addItem = useCartStore((state) => state.addItem);
 
@@ -64,7 +70,6 @@ export default function ProductDetailPage() {
                     setProduct(data.products[0]);
                 } else {
                     // If not found in API, try to find in static mock data as fallback
-                    // This is useful for dev or if API fails
                     const mockProduct = products.find(p => p.id === productId);
                     if (mockProduct) {
                         setProduct(mockProduct);
@@ -74,8 +79,6 @@ export default function ProductDetailPage() {
                 }
             } catch (error) {
                 console.error('Failed to load product:', error);
-
-                // Fallback to mock data
                 const mockProduct = products.find(p => p.id === productId);
                 setProduct(mockProduct || null);
             } finally {
@@ -85,6 +88,34 @@ export default function ProductDetailPage() {
 
         loadProduct();
     }, [productId]);
+
+    // Fetch similar products once main product is loaded
+    useEffect(() => {
+        const loadSimilar = async () => {
+            if (!product) return;
+
+            try {
+                // Fetch a larger list to find similar items
+                const res = await fetch('/api/products?size=100');
+                const data = await res.json();
+
+                if (data.products && Array.isArray(data.products)) {
+                    const list = (data.products as Product[])
+                        .filter(p => p.categoryId === product.categoryId)
+                        .filter(p => p.id !== product.id)
+                        // .filter(p => p.stock > 0) // Optional: only show in-stock items
+                        .slice(0, 4);
+
+                    setSimilarProducts(list);
+                }
+            } catch (e) {
+                console.error('Failed to load similar products', e);
+                setSimilarProducts([]);
+            }
+        };
+
+        loadSimilar();
+    }, [product]);
 
     if (loading) {
         return (
@@ -129,15 +160,7 @@ export default function ProductDetailPage() {
     const currentStock = selectedVariantData?.stock ?? product.stock;
     const variantOutOfStock = currentStock === 0;
 
-    // Get similar products
-    const similarProducts = products
-        .filter(
-            (p) =>
-                p.categoryId === product.categoryId &&
-                p.id !== product.id &&
-                p.isActive
-        )
-        .slice(0, 4);
+    // similarProducts is now populated via useEffect and state
 
     const handleAddToCart = () => {
         if (isOutOfStock || variantOutOfStock) {
@@ -210,7 +233,7 @@ export default function ProductDetailPage() {
 
                     {/* Price */}
                     <div className="flex items-center gap-4">
-                        <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                        <span suppressHydrationWarning className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
                             {displayPrice.toLocaleString('tr-TR', {
                                 style: 'currency',
                                 currency: product.currency,
@@ -218,7 +241,7 @@ export default function ProductDetailPage() {
                         </span>
                         {hasDiscount && (
                             <>
-                                <span className="text-xl text-muted-foreground line-through">
+                                <span suppressHydrationWarning className="text-xl text-muted-foreground line-through">
                                     {product.price.toLocaleString('tr-TR', {
                                         style: 'currency',
                                         currency: product.currency,
@@ -414,27 +437,29 @@ export default function ProductDetailPage() {
                 </section>
             )}
             {/* Mobile Sticky Add to Cart Bar */}
-            <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 bg-background border-t md:hidden safe-area-bottom shadow-[0_-5px_10px_rgba(0,0,0,0.05)] flex gap-4 items-center animate-in slide-in-from-bottom duration-300">
-                <div className="flex flex-col flex-shrink-0">
-                    <span className="text-xs text-muted-foreground">Fiyat</span>
-                    <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-                        {displayPrice.toLocaleString('tr-TR', { style: 'currency', currency: product.currency })}
-                    </span>
+            {isMounted && (
+                <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 bg-background border-t md:hidden safe-area-bottom shadow-[0_-5px_10px_rgba(0,0,0,0.05)] flex gap-4 items-center animate-in slide-in-from-bottom duration-300">
+                    <div className="flex flex-col flex-shrink-0">
+                        <span className="text-xs text-muted-foreground">Fiyat</span>
+                        <span suppressHydrationWarning className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                            {displayPrice.toLocaleString('tr-TR', { style: 'currency', currency: product.currency })}
+                        </span>
+                    </div>
+                    <Button
+                        className={cn(
+                            'flex-1 gap-2 h-12 text-base font-semibold shadow-lg',
+                            isOutOfStock || variantOutOfStock
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white'
+                        )}
+                        onClick={handleAddToCart}
+                        disabled={isOutOfStock || variantOutOfStock}
+                    >
+                        <ShoppingCart className="h-5 w-5" />
+                        {isOutOfStock || variantOutOfStock ? 'Tükendi' : 'Sepete Ekle'}
+                    </Button>
                 </div>
-                <Button
-                    className={cn(
-                        'flex-1 gap-2 h-12 text-base font-semibold shadow-lg',
-                        isOutOfStock || variantOutOfStock
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white'
-                    )}
-                    onClick={handleAddToCart}
-                    disabled={isOutOfStock || variantOutOfStock}
-                >
-                    <ShoppingCart className="h-5 w-5" />
-                    {isOutOfStock || variantOutOfStock ? 'Tükendi' : 'Sepete Ekle'}
-                </Button>
-            </div>
+            )}
 
             {/* Spacer for sticky bar */}
             <div className="h-24 md:hidden" />
