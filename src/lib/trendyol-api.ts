@@ -66,7 +66,8 @@ function getAuthHeaders(config: TrendyolConfig): HeadersInit {
     return {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',
-        'User-Agent': `${config.supplierId} - Benefse`,
+        'User-Agent': `${config.supplierId} - SelfIntegration`,
+        'Accept': 'application/json',
     };
 }
 
@@ -86,10 +87,12 @@ export async function fetchTrendyolProducts(
 
     const url = `${TRENDYOL_API_BASE}/suppliers/${config.supplierId}/products?${params}`;
 
+    console.log('Fetching Trendyol products from:', url);
+
     const response = await fetch(url, {
         method: 'GET',
         headers,
-        next: { revalidate: 300 }, // Cache for 5 minutes
+        cache: 'no-store', // Disable cache for debugging
     });
 
     if (!response.ok) {
