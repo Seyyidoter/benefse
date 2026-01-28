@@ -83,7 +83,8 @@ export async function fetchTrendyolProducts(
     page: number = 0,
     size: number = 50,
     barcode?: string,
-    approved: boolean = true
+    approved: boolean = true,
+    revalidateSeconds: number = 300 // Default 5 minutes cache
 ): Promise<TrendyolProductsResponse> {
     const config = getConfig();
     const headers = getAuthHeaders(config);
@@ -108,7 +109,7 @@ export async function fetchTrendyolProducts(
     const response = await fetch(url, {
         method: 'GET',
         headers,
-        cache: 'no-store',
+        next: { revalidate: revalidateSeconds },
     });
 
     if (!response.ok) {

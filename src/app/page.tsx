@@ -9,6 +9,9 @@ import { categories } from '@/data/categories';
 import { fetchTrendyolProducts, convertTrendyolProduct } from '@/lib/trendyol-api';
 import { products as mockProducts } from '@/data/products';
 
+// Revalidate homepage every hour
+export const revalidate = 3600;
+
 export default async function HomePage() {
   let products = [];
 
