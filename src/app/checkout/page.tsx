@@ -66,7 +66,10 @@ export default function CheckoutPage() {
     const subtotal = getSubtotal();
     const hasFreeShipping = getFreeShippingEligibility(subtotal);
     const selectedShippingMethod = shippingMethods.find((s) => s.id === selectedShipping);
-    const shippingCost = hasFreeShipping && selectedShippingMethod?.id === 'ship-3' ? 0 : (selectedShippingMethod?.price || 0);
+
+    // FIX: Allow both 'ship-3' (Free) and 'ship-1' (Standard) to be free if eligible
+    const shippingCost = hasFreeShipping && (selectedShippingMethod?.id === 'ship-3' || selectedShippingMethod?.id === 'ship-1') ? 0 : (selectedShippingMethod?.price || 0);
+
     const discount = couponDiscount || 0;
     const total = subtotal + shippingCost - discount;
 
@@ -358,8 +361,9 @@ export default function CheckoutPage() {
                                     className="space-y-4"
                                 >
                                     {shippingMethods.map((method) => {
+                                        // FIX: Enable free shipping for standard shipping too
                                         const isFreeEligible =
-                                            method.id === 'ship-3' && hasFreeShipping;
+                                            (method.id === 'ship-3' || method.id === 'ship-1') && hasFreeShipping;
                                         const displayPrice = isFreeEligible ? 0 : method.price;
 
                                         return (

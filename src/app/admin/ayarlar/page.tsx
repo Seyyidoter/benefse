@@ -48,7 +48,7 @@ export default function AdminSettingsPage() {
                     <div className="grid md:grid-cols-2 gap-4">
                         <div className="p-4 bg-muted rounded-lg">
                             <p className="text-sm text-muted-foreground">Mağaza Adı</p>
-                            <p className="font-medium">ModaShop</p>
+                            <p className="font-medium">Benefse</p>
                         </div>
                         <div className="p-4 bg-muted rounded-lg">
                             <p className="text-sm text-muted-foreground">Para Birimi</p>
