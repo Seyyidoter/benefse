@@ -15,6 +15,16 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'cdn.dsmcdn.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'marketplace-supplier-media-center.oss-eu-central-1.aliyuncs.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'picsum.photos',
         pathname: '/**',
       },
