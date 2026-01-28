@@ -23,6 +23,7 @@ import {
     SheetHeader,
     SheetTitle,
     SheetTrigger,
+    SheetDescription,
 } from '@/components/ui/sheet';
 import {
     DropdownMenu,
@@ -199,6 +200,9 @@ export function Header() {
                                         </div>
                                         <span className="font-serif">Benefse</span>
                                     </SheetTitle>
+                                    <SheetDescription className="sr-only">
+                                        Mobil menü navigasyonu ve arama
+                                    </SheetDescription>
                                 </SheetHeader>
 
                                 {/* Mobile Search */}

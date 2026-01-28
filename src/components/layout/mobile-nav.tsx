@@ -7,7 +7,7 @@ import { useCartStore } from '@/store';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { categories } from '@/data/categories';
 import Image from 'next/image';
@@ -86,6 +86,9 @@ export function MobileNav() {
                                                 </div>
                                                 Kategoriler & Arama
                                             </SheetTitle>
+                                            <SheetDescription className="sr-only">
+                                                Kategori listesi ve arama formu
+                                            </SheetDescription>
                                         </SheetHeader>
 
                                         <div className="py-6 space-y-6 overflow-y-auto max-h-full pb-20">
@@ -98,7 +101,6 @@ export function MobileNav() {
                                                     className="w-full pl-10 h-12 bg-muted/50"
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                                    autoFocus
                                                 />
                                             </form>
 
