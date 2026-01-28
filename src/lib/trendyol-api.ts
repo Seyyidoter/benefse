@@ -1,7 +1,7 @@
 // Trendyol API Service
-// Documentation: https://developers.trendyol.com/
+// Documentation: https://developers.trendyol.com/docs/api-endpointleri
 
-const TRENDYOL_API_BASE = 'https://api.trendyol.com/sapigw';
+const TRENDYOL_API_BASE = 'https://apigw.trendyol.com/integration/ecgw';
 
 interface TrendyolConfig {
     supplierId: string;
@@ -9,43 +9,26 @@ interface TrendyolConfig {
     apiSecret: string;
 }
 
+// Trendyol İhracat Merkezi Product Format
 interface TrendyolProduct {
-    id: string;
     barcode: string;
-    title: string;
-    productMainId: string;
-    brandId: number;
-    brandName: string;
-    categoryId: number;
-    categoryName: string;
-    quantity: number;
-    stockCode: string;
-    dimensionalWeight: number;
+    sellerBarcode?: string;
+    rrpPrice: number;
+    buyingPrice: number;
+    stock: number;
+    origin?: string;
+    composition?: string;
     description: string;
-    currencyType: string;
-    listPrice: number;
-    salePrice: number;
-    vatRate: number;
-    cargoCompanyId: number;
-    images: { url: string }[];
-    attributes: { attributeId: number; attributeName: string; attributeValue: string }[];
-    createDateTime: number;
-    lastUpdateDate: number;
-    productUrl: string;
-    approved: boolean;
-    archived: boolean;
-    onSale: boolean;
-    rejected: boolean;
-    blacklisted: boolean;
-    hasActiveCampaign: boolean;
-}
-
-interface TrendyolProductsResponse {
-    page: number;
-    size: number;
-    totalElements: number;
-    totalPages: number;
-    content: TrendyolProduct[];
+    currency: string;
+    gtip?: string;
+    categoryId: number;
+    careInstructions?: string;
+    attributes?: {
+        attributeId: number;
+        attributeName: string;
+        valueId: number | null;
+        valueName: string;
+    }[];
 }
 
 function getConfig(): TrendyolConfig {
@@ -60,113 +43,121 @@ function getConfig(): TrendyolConfig {
     return { supplierId, apiKey, apiSecret };
 }
 
+function generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 function getAuthHeaders(config: TrendyolConfig): HeadersInit {
     const auth = Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64');
 
     return {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',
-        'User-Agent': `${config.supplierId} - SelfIntegration`,
         'Accept': 'application/json',
+        'User-Agent': `${config.supplierId} - SelfIntegration`,
+        'x-agentname': `${config.supplierId} - SelfIntegration`,
+        'x-correlationid': generateUUID(),
+        'x-clientip': '127.0.0.1', // Will be replaced by server IP
     };
 }
 
 export async function fetchTrendyolProducts(
-    page: number = 0,
-    size: number = 50,
-    approved: boolean = true
-): Promise<TrendyolProductsResponse> {
+    size: number = 100,
+    pageKey?: string
+): Promise<{ products: TrendyolProduct[]; nextPageKey?: string }> {
     const config = getConfig();
     const headers = getAuthHeaders(config);
 
+    // Build URL with query params
     const params = new URLSearchParams({
-        page: page.toString(),
         size: size.toString(),
-        approved: approved.toString(),
     });
 
-    const url = `${TRENDYOL_API_BASE}/suppliers/${config.supplierId}/products?${params}`;
+    if (pageKey) {
+        params.set('pageKey', pageKey);
+    }
+
+    const url = `${TRENDYOL_API_BASE}/v2/${config.supplierId}/products?${params}`;
 
     console.log('Fetching Trendyol products from:', url);
+    console.log('Headers:', JSON.stringify(headers, null, 2));
 
     const response = await fetch(url, {
         method: 'GET',
         headers,
-        cache: 'no-store', // Disable cache for debugging
+        cache: 'no-store',
     });
 
     if (!response.ok) {
         const errorText = await response.text();
         console.error('Trendyol API Error:', response.status, errorText);
-        throw new Error(`Trendyol API error: ${response.status}`);
+        throw new Error(`Trendyol API error: ${response.status} - ${errorText}`);
     }
 
-    return response.json();
+    const products: TrendyolProduct[] = await response.json();
+
+    // Get next page key from response headers
+    const nextPageKey = response.headers.get('x-paging-key') || undefined;
+
+    return { products, nextPageKey };
 }
 
 export async function fetchAllTrendyolProducts(): Promise<TrendyolProduct[]> {
     const allProducts: TrendyolProduct[] = [];
-    let page = 0;
-    let hasMore = true;
+    let pageKey: string | undefined = undefined;
+    let pageCount = 0;
     const maxPages = 10; // Safety limit
 
-    while (hasMore && page < maxPages) {
-        const response = await fetchTrendyolProducts(page, 50);
-        allProducts.push(...response.content);
+    do {
+        const result = await fetchTrendyolProducts(100, pageKey);
+        allProducts.push(...result.products);
+        pageKey = result.nextPageKey;
+        pageCount++;
 
-        hasMore = page < response.totalPages - 1;
-        page++;
-    }
+        console.log(`Fetched page ${pageCount}, got ${result.products.length} products, total: ${allProducts.length}`);
+    } while (pageKey && pageCount < maxPages);
 
     return allProducts;
 }
 
 // Convert Trendyol product to our Product type
 export function convertTrendyolProduct(tp: TrendyolProduct) {
+    // Get product title from attributes or description
+    const colorAttr = tp.attributes?.find(a => a.attributeName === 'Renk');
+    const title = tp.description || `Ürün - ${tp.barcode}`;
+
     return {
-        id: tp.barcode || tp.id,
-        title: tp.title,
-        description: tp.description || tp.title,
-        brand: tp.brandName,
-        categoryId: getCategorySlug(tp.categoryName),
-        categoryName: tp.categoryName,
-        price: tp.listPrice,
-        salePrice: tp.salePrice < tp.listPrice ? tp.salePrice : undefined,
-        currency: 'TRY' as const,
-        stock: tp.quantity,
-        sku: tp.stockCode || tp.productMainId,
+        id: tp.barcode,
+        title: title,
+        description: tp.description || title,
+        brand: 'Benefse',
+        categoryId: getCategorySlug(tp.categoryId),
+        price: tp.rrpPrice,
+        salePrice: tp.buyingPrice < tp.rrpPrice ? tp.buyingPrice : undefined,
+        currency: tp.currency || 'TRY',
+        stock: tp.stock,
+        sku: tp.sellerBarcode || tp.barcode,
         barcode: tp.barcode,
-        images: tp.images.map(img => img.url),
-        tags: tp.attributes.map(attr => attr.attributeValue).filter(Boolean),
-        isActive: tp.onSale && tp.approved && !tp.archived,
-        trendyolUrl: tp.productUrl,
-        createdAt: new Date(tp.createDateTime),
-        updatedAt: new Date(tp.lastUpdateDate),
+        images: [], // Trendyol İhracat API doesn't return images
+        tags: tp.attributes?.map(attr => attr.valueName).filter(Boolean) || [],
+        isActive: tp.stock > 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
     };
 }
 
-function getCategorySlug(categoryName: string): string {
-    const categoryMap: Record<string, string> = {
-        'Mutfak Rafı': 'mutfak-raflari',
-        'Mutfak Düzenleyici': 'mutfak-raflari',
-        'Runner': 'runner-masa-ortusu',
-        'Masa Örtüsü': 'runner-masa-ortusu',
-        'Amerikan Servisi': 'runner-masa-ortusu',
-        'Gece Lambası': 'lambalar',
-        'Masa Lambası': 'lambalar',
-        'Aydınlatma': 'lambalar',
-        'Laptop Sehpası': 'laptop-sehpalari',
-        'Ev Dekorasyon': 'ev-aksesuarlari',
+function getCategorySlug(categoryId: number): string {
+    // Map Trendyol category IDs to our slugs
+    // You can expand this based on your actual categories
+    const categoryMap: Record<number, string> = {
+        // Add your Trendyol category IDs here
     };
 
-    // Try to find a matching category
-    for (const [key, slug] of Object.entries(categoryMap)) {
-        if (categoryName.toLowerCase().includes(key.toLowerCase())) {
-            return slug;
-        }
-    }
-
-    return 'ev-aksesuarlari'; // Default category
+    return categoryMap[categoryId] || 'ev-aksesuarlari';
 }
 
-export type { TrendyolProduct, TrendyolProductsResponse };
+export type { TrendyolProduct };

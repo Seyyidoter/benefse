@@ -5,52 +5,53 @@ import { products as mockProducts } from '@/data/products';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const useMock = searchParams.get('mock') === 'true';
+    const size = parseInt(searchParams.get('size') || '100');
+    const pageKey = searchParams.get('pageKey') || undefined;
+
+    // If mock mode requested
+    if (useMock) {
+        return NextResponse.json({
+            products: mockProducts,
+            pagination: {
+                total: mockProducts.length,
+            },
+            source: 'mock',
+        });
+    }
+
     try {
-        const { searchParams } = new URL(request.url);
-        const page = parseInt(searchParams.get('page') || '0');
-        const size = parseInt(searchParams.get('size') || '50');
-        const useMock = searchParams.get('mock') === 'true';
+        console.log('Attempting to fetch from Trendyol API...');
 
-        // If mock mode requested
-        if (useMock) {
-            return NextResponse.json({
-                products: mockProducts,
-                pagination: {
-                    page: 0,
-                    size: mockProducts.length,
-                    totalElements: mockProducts.length,
-                    totalPages: 1,
-                },
-                source: 'mock',
-            });
-        }
+        const result = await fetchTrendyolProducts(size, pageKey);
+        const products = result.products.map(convertTrendyolProduct);
 
-        const response = await fetchTrendyolProducts(page, size);
-        const products = response.content.map(convertTrendyolProduct);
+        console.log(`Successfully fetched ${products.length} products from Trendyol`);
 
         return NextResponse.json({
             products,
             pagination: {
-                page: response.page,
-                size: response.size,
-                totalElements: response.totalElements,
-                totalPages: response.totalPages,
+                total: products.length,
+                nextPageKey: result.nextPageKey,
             },
             source: 'trendyol',
         });
     } catch (error) {
-        console.error('Products API Error:', error);
+        console.error('Trendyol API Error:', error);
+
+        // Log the full error for debugging
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error details:', errorMessage);
 
         // Fallback to mock products when Trendyol API fails
         return NextResponse.json({
             products: mockProducts,
             pagination: {
-                page: 0,
-                size: mockProducts.length,
-                totalElements: mockProducts.length,
-                totalPages: 1,
+                total: mockProducts.length,
             },
             source: 'mock-fallback',
+            error: errorMessage,
             message: 'Trendyol API unavailable, using demo data',
         });
     }
