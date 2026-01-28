@@ -22,8 +22,8 @@ export interface Product {
     sku: string;
     barcode?: string;
     variants?: ProductVariant[];
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: Date | string;
+    updatedAt: Date | string;
     isActive: boolean;
 }
 
@@ -93,8 +93,8 @@ export interface OrderDraft {
     shippingMethod: string;
     status: OrderStatus;
     notes?: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: Date | string;
+    updatedAt: Date | string;
 }
 
 // ============ Inventory Types ============

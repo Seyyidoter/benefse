@@ -34,7 +34,10 @@ import { useCartStore } from '@/store';
 import { categories } from '@/data/categories';
 import { cn } from '@/lib/utils';
 
+import { useHydrated } from '@/hooks/use-hydrated';
+
 export function Header() {
+    const hydrated = useHydrated();
     const pathname = usePathname();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -166,7 +169,7 @@ export function Header() {
                         <Link href="/sepet">
                             <Button variant="ghost" size="icon" className="relative">
                                 <ShoppingBag className="h-5 w-5" />
-                                {itemCount > 0 && (
+                                {hydrated && itemCount > 0 && (
                                     <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-[#e91e8c] hover:bg-[#e91e8c]">
                                         {itemCount}
                                     </Badge>

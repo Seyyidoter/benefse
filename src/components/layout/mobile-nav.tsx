@@ -12,7 +12,10 @@ import { Input } from '@/components/ui/input';
 import { categories } from '@/data/categories';
 import Image from 'next/image';
 
+import { useHydrated } from '@/hooks/use-hydrated';
+
 export function MobileNav() {
+    const hydrated = useHydrated();
     const pathname = usePathname();
     const itemCount = useCartStore((state) => state.getItemCount());
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -148,7 +151,7 @@ export function MobileNav() {
                             >
                                 <div className="relative">
                                     <item.icon className={cn("w-5 h-5", item.isActive && "fill-current")} />
-                                    {item.badge && item.badge > 0 && (
+                                    {hydrated && item.badge && item.badge > 0 && (
                                         <Badge className="absolute -top-2 -right-3 h-4 min-w-[16px] flex items-center justify-center p-0.5 text-[10px] bg-[#e91e8c] text-white border-2 border-background">
                                             {item.badge}
                                         </Badge>

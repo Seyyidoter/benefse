@@ -103,7 +103,15 @@ export default function ProductDetailPage() {
     }
 
     if (!product) {
-        notFound();
+        return (
+            <div className="container mx-auto px-4 py-16 text-center">
+                <h1 className="text-2xl font-bold mb-4">Ürün Bulunamadı</h1>
+                <p className="text-muted-foreground mb-8">Aradığınız ürün mevcut değil veya kaldırılmış olabilir.</p>
+                <Link href="/urunler">
+                    <Button>Ürünlere Dön</Button>
+                </Link>
+            </div>
+        );
     }
 
     const category = categories.find((c) => c.id === product.categoryId);

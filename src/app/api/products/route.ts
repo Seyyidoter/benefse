@@ -3,6 +3,7 @@ import { fetchTrendyolProducts, convertTrendyolProduct } from '@/lib/trendyol-ap
 import { products as mockProducts } from '@/data/products';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);

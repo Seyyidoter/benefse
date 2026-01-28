@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useOrderStore } from '@/store';
+import { useHydrated } from '@/hooks/use-hydrated';
 
 export default function AccountPage() {
     const { drafts } = useOrderStore();
+    const hydrated = useHydrated();
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
@@ -94,7 +96,7 @@ export default function AccountPage() {
                 <div className="flex items-center gap-3 mb-6">
                     <Package className="h-6 w-6" />
                     <h2 className="text-2xl font-bold">Sipariş Taslakları</h2>
-                    <Badge variant="secondary">{drafts.length}</Badge>
+                    <Badge variant="secondary">{hydrated ? drafts.length : 0}</Badge>
                 </div>
 
                 {drafts.length === 0 ? (
