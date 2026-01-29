@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { auth } from '@/auth';
 import { getUserOrders } from '@/lib/order-actions';
 import { LogoutButton } from '@/components/auth/logout-button';
+import { EditProfileDialog } from '@/components/profile/edit-profile-dialog';
 
 // Status badge colors
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className?: string }> = {
@@ -44,47 +45,56 @@ export default async function AccountPage() {
 
             <div className="grid md:grid-cols-3 gap-6">
                 {/* Menu Cards */}
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="p-6 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
-                            <User className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold">Profil Bilgileri</h3>
-                            <p className="text-sm text-muted-foreground">
-                                {session.user.email}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
+                <EditProfileDialog initialName={session.user.name}>
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <CardContent className="p-6 flex items-center gap-4">
+                            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
+                                <User className="h-6 w-6 text-purple-600" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold">Profil Bilgileri</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    {session.user.name || 'Ad Yok'}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {session.user.email}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </EditProfileDialog>
 
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">
-                    <CardContent className="p-6 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
-                            <MapPin className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold">Adreslerim</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Kayıtlı adreslerinizi yönetin
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
+                <Link href="/adreslerim">
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                        <CardContent className="p-6 flex items-center gap-4">
+                            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
+                                <MapPin className="h-6 w-6 text-purple-600" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold">Adreslerim</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Kayıtlı adreslerinizi yönetin
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
 
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">
-                    <CardContent className="p-6 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
-                            <Heart className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold">Favorilerim</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Beğendiğiniz ürünler
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
+                <Link href="/favorilerim">
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                        <CardContent className="p-6 flex items-center gap-4">
+                            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
+                                <Heart className="h-6 w-6 text-purple-600" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold">Favorilerim</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Beğendiğiniz ürünler
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
             </div>
 
             {/* Orders Section */}

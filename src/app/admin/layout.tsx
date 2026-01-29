@@ -28,9 +28,9 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
-const ADMIN_PASSWORD_KEY = 'admin_authenticated';
-const DEMO_PASSWORD = 'demo123'; // In production, use env variable
+const ADMIN_ROLE = 'ADMIN';
 
 const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -42,42 +42,14 @@ const navItems = [
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [password, setPassword] = useState('');
-    const [showLoginDialog, setShowLoginDialog] = useState(false);
+    const { data: session, status } = useSession();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    useEffect(() => {
-        // Check if already authenticated
-        const auth = sessionStorage.getItem(ADMIN_PASSWORD_KEY);
-        if (auth === 'true') {
-            setIsAuthenticated(true);
-        } else {
-            setShowLoginDialog(true);
-        }
-        setIsLoading(false);
-    }, []);
-
-    const handleLogin = () => {
-        if (password === DEMO_PASSWORD) {
-            sessionStorage.setItem(ADMIN_PASSWORD_KEY, 'true');
-            setIsAuthenticated(true);
-            setShowLoginDialog(false);
-            toast.success('Admin paneline giriş yapıldı');
-        } else {
-            toast.error('Yanlış şifre');
-        }
-    };
-
     const handleLogout = () => {
-        sessionStorage.removeItem(ADMIN_PASSWORD_KEY);
-        setIsAuthenticated(false);
         router.push('/');
-        toast.success('Çıkış yapıldı');
     };
 
-    if (isLoading) {
+    if (status === 'loading') {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -85,54 +57,45 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         );
     }
 
-    // Login Dialog
-    if (!isAuthenticated) {
+    // Access Control Check
+    const userEmail = session?.user?.email;
+    // Allow access if role is ADMIN OR if email matches the super admin email (failsafe)
+    const isAdmin = (session?.user as any)?.role === ADMIN_ROLE || userEmail === 'seyyidoter3547@gmail.com';
+
+    if (!session || !isAdmin) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
-                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center mx-auto mb-4">
-                            <span className="text-white font-bold text-xl">M</span>
+                        <div className="h-12 w-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+                            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
                         </div>
-                        <CardTitle>Admin Paneli</CardTitle>
+                        <CardTitle className="text-red-600 dark:text-red-400">Erişim Reddedildi</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
-                                <div className="flex items-start gap-2">
-                                    <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                                    <p className="text-xs text-orange-700 dark:text-orange-300">
-                                        Demo şifresi: <strong>demo123</strong>
-                                    </p>
-                                </div>
-                            </div>
+                    <CardContent className="text-center space-y-4">
+                        <p className="text-muted-foreground">
+                            Bu panele erişim yetkiniz bulunmamaktadır. Sadece yöneticiler giriş yapabilir.
+                        </p>
 
-                            <div>
-                                <Label htmlFor="password">Şifre</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="Admin şifresi"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                                    className="mt-2"
-                                />
-                            </div>
-
+                        {!session ? (
                             <Button
-                                onClick={handleLogin}
+                                onClick={() => router.push('/giris?callbackUrl=/admin')}
                                 className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600"
                             >
                                 Giriş Yap
                             </Button>
+                        ) : (
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium">Giriş yapılan hesap:</p>
+                                <p className="text-sm text-muted-foreground bg-muted p-2 rounded">{session.user?.email}</p>
+                            </div>
+                        )}
 
-                            <Link href="/">
-                                <Button variant="ghost" className="w-full">
-                                    Ana Sayfaya Dön
-                                </Button>
-                            </Link>
-                        </div>
+                        <Link href="/">
+                            <Button variant="ghost" className="w-full">
+                                Ana Sayfaya Dön
+                            </Button>
+                        </Link>
                     </CardContent>
                 </Card>
             </div>

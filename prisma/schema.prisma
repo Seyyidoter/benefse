@@ -24,11 +24,14 @@ model User {
   passwordHash  String?   // For credentials provider
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  role          String    @default("USER") // "USER" | "ADMIN"
 
   // Relations
-  accounts Account[]
-  sessions Session[]
-  orders   Order[]
+  accounts       Account[]
+  sessions       Session[]
+  orders         Order[]
+  favorites      Favorite[]
+  savedAddresses SavedAddress[]
 
   @@map("users")
 }
@@ -142,3 +145,43 @@ model Address {
 
   @@map("addresses")
 }
+
+// ============================================
+// User Features
+// ============================================
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String   // Trendyol product ID
+  title     String
+  price     Float
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("favorites")
+}
+
+model SavedAddress {
+  id           String   @id @default(cuid())
+  userId       String
+  title        String   // "Ev", "İş" gibi
+  fullName     String
+  phone        String
+  city         String
+  district     String
+  neighborhood String
+  address      String
+  postalCode   String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_addresses")
+}
+

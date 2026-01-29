@@ -33,6 +33,7 @@ import { products } from '@/data/products';
 import { categories } from '@/data/categories';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { FavoriteButton } from '@/components/favorites/favorite-button';
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -336,10 +337,12 @@ export default function ProductDetailPage() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-4">
-                        <Button variant="outline" className="flex-1 gap-2">
-                            <Heart className="h-5 w-5" />
-                            Favorilere Ekle
-                        </Button>
+                        <FavoriteButton
+                            productId={product.id}
+                            title={product.title}
+                            price={product.price}
+                            imageUrl={product.images?.[0]}
+                        />
                         <Button variant="outline" size="icon">
                             <Share2 className="h-5 w-5" />
                         </Button>

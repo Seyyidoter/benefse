@@ -43,7 +43,7 @@ export interface CartItem {
     price: number;
     salePrice?: number;
     quantity: number;
-    image: string;
+    image?: string;
     variantId?: string;
     variantName?: string;
 }

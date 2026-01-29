@@ -271,7 +271,7 @@ export default async function HomePage() {
 
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="p-6 rounded-xl bg-[#3a3a3a]">
-                <div className="text-3xl font-bold text-[#e91e8c]">48+</div>
+                <div className="text-3xl font-bold text-[#e91e8c]">30+</div>
                 <div className="text-sm text-[#a0a0a0] mt-1">Ürün</div>
               </div>
               <div className="p-6 rounded-xl bg-[#3a3a3a]">

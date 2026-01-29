@@ -158,10 +158,12 @@ export function Header() {
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-2">
-                        {/* Favorites - Hidden for now */}
-                        <Button variant="ghost" size="icon" className="hidden sm:flex" disabled>
-                            <Heart className="h-5 w-5" />
-                        </Button>
+                        {/* Favorites */}
+                        <Link href="/favorilerim">
+                            <Button variant="ghost" size="icon" className="hidden sm:flex">
+                                <Heart className="h-5 w-5" />
+                            </Button>
+                        </Link>
 
                         {/* Account */}
                         <UserMenu />
@@ -248,9 +250,21 @@ export function Header() {
                                     <Link
                                         href="/urunler"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors border-t mt-2 pt-4"
+                                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors mt-2"
                                     >
+                                        <ShoppingBag className="h-5 w-5" />
                                         Tüm Ürünler
+                                    </Link>
+
+                                    <div className="border-t my-2" />
+
+                                    <Link
+                                        href="/favorilerim"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
+                                    >
+                                        <Heart className="h-5 w-5" />
+                                        Favorilerim
                                     </Link>
 
                                     <Link
