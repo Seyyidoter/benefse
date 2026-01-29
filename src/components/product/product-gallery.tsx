@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface ProductGalleryProps {
@@ -79,6 +79,10 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl p-0 overflow-hidden">
+                        <DialogTitle className="sr-only">Ürün Görseli Büyük Hali</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Bu pencere ürün görselini tam ekran boyutunda gösterir.
+                        </DialogDescription>
                         <div className="relative aspect-square">
                             <Image
                                 src={images[currentIndex] || '/placeholder.jpg'}

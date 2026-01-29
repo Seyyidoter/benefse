@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchTrendyolProducts, convertTrendyolProduct } from '@/lib/trendyol-api';
 import { products as mockProducts } from '@/data/products';
+import { normalizeProduct } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
     // If mock mode requested
     if (useMock) {
         return NextResponse.json({
-            products: mockProducts,
+            products: mockProducts.map(normalizeProduct),
             pagination: {
                 total: mockProducts.length,
                 page: 0,
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
         });
 
         const result = await fetchTrendyolProducts(page, size, barcode);
-        const products = result.content.map(convertTrendyolProduct);
+        const products = result.content.map(convertTrendyolProduct).map(normalizeProduct);
 
         console.log(`Successfully fetched ${products.length} products from Trendyol`);
 
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
 
         // Fallback to mock products when Trendyol API fails
         return NextResponse.json({
-            products: mockProducts,
+            products: mockProducts.map(normalizeProduct),
             pagination: {
                 total: mockProducts.length,
                 page: 0,
