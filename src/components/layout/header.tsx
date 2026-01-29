@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
     Sheet,
@@ -96,7 +97,7 @@ export function Header() {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden lg:flex items-center gap-6">
+                    <nav className="hidden lg:flex items-center gap-6" aria-label="Ana Menü">
                         <Link
                             href="/"
                             className={cn(
@@ -140,8 +141,10 @@ export function Header() {
                     <form
                         onSubmit={handleSearch}
                         className="hidden md:flex flex-1 max-w-md"
+                        role="search"
                     >
                         <div className="relative w-full">
+                            <Label htmlFor="search-desktop" className="sr-only">Ürün Ara</Label>
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 id="search-desktop"
@@ -160,7 +163,7 @@ export function Header() {
                     <div className="flex items-center gap-2">
                         {/* Favorites */}
                         <Link href="/favorilerim">
-                            <Button variant="ghost" size="icon" className="hidden sm:flex">
+                            <Button variant="ghost" size="icon" className="hidden sm:flex" aria-label="Favorilerim">
                                 <Heart className="h-5 w-5" />
                             </Button>
                         </Link>
@@ -170,7 +173,7 @@ export function Header() {
 
                         {/* Cart */}
                         <Link href="/sepet">
-                            <Button variant="ghost" size="icon" className="relative">
+                            <Button variant="ghost" size="icon" className="relative" aria-label="Sepetim">
                                 <ShoppingBag className="h-5 w-5" />
                                 {hydrated && itemCount > 0 && (
                                     <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-[#e91e8c] hover:bg-[#e91e8c]">
@@ -183,7 +186,7 @@ export function Header() {
                         {/* Mobile Menu Toggle */}
                         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                             <SheetTrigger asChild className="lg:hidden">
-                                <Button variant="ghost" size="icon">
+                                <Button variant="ghost" size="icon" aria-label="Menüyü Aç">
                                     <Menu className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
@@ -206,8 +209,9 @@ export function Header() {
                                 </SheetHeader>
 
                                 {/* Mobile Search */}
-                                <form onSubmit={handleSearch} className="mt-6">
+                                <form onSubmit={handleSearch} className="mt-6" role="search">
                                     <div className="relative">
+                                        <Label htmlFor="search-mobile" className="sr-only">Ürün Ara</Label>
                                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                         <Input
                                             id="search-mobile"

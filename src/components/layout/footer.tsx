@@ -31,6 +31,7 @@ export function Footer() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 rounded-full bg-[#3a3a3a] hover:bg-[#e91e8c] transition-colors"
+                                aria-label="Instagram sayfamızı ziyaret edin"
                             >
                                 <Instagram className="h-5 w-5" />
                             </a>
@@ -39,6 +40,7 @@ export function Footer() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 rounded-full bg-[#3a3a3a] hover:bg-[#e91e8c] transition-colors"
+                                aria-label="Facebook sayfamızı ziyaret edin"
                             >
                                 <Facebook className="h-5 w-5" />
                             </a>

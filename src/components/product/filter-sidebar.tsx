@@ -70,8 +70,9 @@ export function FilterSidebar({ filters, onUpdate, onClear, className }: FilterS
 
             {/* Search */}
             <div>
-                <Label className="text-sm font-medium">Ara</Label>
+                <Label htmlFor="search-input" className="text-sm font-medium">Ara</Label>
                 <Input
+                    id="search-input"
                     placeholder="Ürün ara..."
                     value={filters.search || ''}
                     onChange={(e) => onUpdate({ search: e.target.value || undefined })}
@@ -87,15 +88,14 @@ export function FilterSidebar({ filters, onUpdate, onClear, className }: FilterS
                 <div className="space-y-2">
                     {categories.map((cat) => (
                         <div key={cat.id} className="flex items-center space-x-2">
-                            <Checkbox
-                                id={cat.id}
-                                checked={filters.categoryId === cat.id}
-                                onCheckedChange={(checked) =>
-                                    onUpdate({ categoryId: checked ? cat.id : undefined })
-                                }
-                            />
-                            <Label htmlFor={cat.id} className="text-sm cursor-pointer font-normal">
-                                {cat.name}
+                            <Label className="flex items-center gap-2 text-sm cursor-pointer font-normal hover:text-primary transition-colors">
+                                <Checkbox
+                                    checked={filters.categoryId === cat.id}
+                                    onCheckedChange={(checked) =>
+                                        onUpdate({ categoryId: checked ? cat.id : undefined })
+                                    }
+                                />
+                                <span>{cat.name}</span>
                             </Label>
                         </div>
                     ))}
@@ -111,6 +111,7 @@ export function FilterSidebar({ filters, onUpdate, onClear, className }: FilterS
                     <Input
                         type="number"
                         placeholder="Min"
+                        aria-label="En düşük fiyat"
                         value={localMinPrice}
                         onChange={(e) => setLocalMinPrice(e.target.value)}
                         onBlur={handlePriceBlur}
@@ -120,6 +121,7 @@ export function FilterSidebar({ filters, onUpdate, onClear, className }: FilterS
                     <Input
                         type="number"
                         placeholder="Max"
+                        aria-label="En yüksek fiyat"
                         value={localMaxPrice}
                         onChange={(e) => setLocalMaxPrice(e.target.value)}
                         onBlur={handlePriceBlur}
