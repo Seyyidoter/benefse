@@ -110,16 +110,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
                         </Button>
                     </div>
 
-                    {/* Add to Cart */}
+                    {/* Add to Cart - Desktop (Hover) */}
                     {product.stock > 0 && (
                         <div
                             className={cn(
-                                'absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent transition-all duration-300',
+                                'hidden lg:block absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent transition-all duration-300',
                                 isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                             )}
                         >
                             <Button
-                                className="w-full bg-[#e91e8c] hover:bg-[#d11a7d] text-white gap-2"
+                                className="w-full bg-[#e91e8c] hover:bg-[#d11a7d] text-white gap-2 shadow-lg"
                                 size="sm"
                                 onClick={handleAddToCart}
                             >
@@ -127,6 +127,17 @@ export function ProductCard({ product, className }: ProductCardProps) {
                                 Sepete Ekle
                             </Button>
                         </div>
+                    )}
+
+                    {/* Add to Cart - Mobile (Always Visible) */}
+                    {product.stock > 0 && (
+                        <Button
+                            size="icon"
+                            className="lg:hidden absolute bottom-2 right-2 h-10 w-10 rounded-full bg-[#e91e8c] text-white shadow-lg active:scale-90 transition-transform"
+                            onClick={handleAddToCart}
+                        >
+                            <ShoppingBag className="h-5 w-5" />
+                        </Button>
                     )}
                 </div>
 
