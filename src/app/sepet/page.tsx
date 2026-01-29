@@ -112,14 +112,18 @@ export default function CartPage() {
                                 <div className="flex gap-4">
                                     {/* Image */}
                                     <Link href={`/urun/${item.productId}`} className="flex-shrink-0">
-                                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-muted">
-                                            <Image
-                                                src={item.image}
-                                                alt={item.title}
-                                                fill
-                                                className="object-cover"
-                                                sizes="128px"
-                                            />
+                                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                                            {item.image ? (
+                                                <Image
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="128px"
+                                                />
+                                            ) : (
+                                                <ShoppingBag className="w-8 h-8 text-muted-foreground opacity-50" />
+                                            )}
                                         </div>
                                     </Link>
 
