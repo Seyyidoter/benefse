@@ -35,12 +35,12 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
     return (
         <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted group">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border group">
                 <Image
                     src={images[currentIndex] || '/placeholder.jpg'}
                     alt={`${title} - Görsel ${currentIndex + 1}`}
                     fill
-                    className="object-cover"
+                    className="object-contain p-2"
                     sizes="(max-width: 768px) 100vw, 50vw"
                     priority
                 />
@@ -111,7 +111,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
                             key={index}
                             onClick={() => setCurrentIndex(index)}
                             className={cn(
-                                'relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200',
+                                'relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200 bg-white border',
                                 currentIndex === index
                                     ? 'ring-2 ring-primary ring-offset-2'
                                     : 'opacity-70 hover:opacity-100'
@@ -121,7 +121,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
                                 src={image}
                                 alt={`${title} - Küçük görsel ${index + 1}`}
                                 fill
-                                className="object-cover"
+                                className="object-contain p-1"
                                 sizes="80px"
                             />
                         </button>
