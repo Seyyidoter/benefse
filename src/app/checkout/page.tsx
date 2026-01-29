@@ -36,6 +36,7 @@ import { shippingMethods, getFreeShippingEligibility } from '@/data/shipping';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { createOrder } from '@/lib/order-actions';
+import { getUserAddresses, SavedAddressItem } from '@/lib/address-actions';
 
 // Address Schema
 const addressSchema = z.object({
@@ -66,6 +67,8 @@ export default function CheckoutPage() {
     const [selectedShipping, setSelectedShipping] = useState(shippingMethods[0].id);
     const [isProcessing, setIsProcessing] = useState(false);
     const [addressData, setAddressData] = useState<AddressFormData | null>(null);
+    const [savedAddresses, setSavedAddresses] = useState<SavedAddressItem[]>([]);
+    const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<string | null>(null);
 
     const subtotal = getSubtotal();
     const hasFreeShipping = getFreeShippingEligibility(subtotal);
@@ -106,6 +109,33 @@ export default function CheckoutPage() {
             form.setValue('fullName', session.user.name);
         }
     }, [session, form]);
+
+    // Fetch saved addresses
+    useEffect(() => {
+        if (session?.user) {
+            getUserAddresses().then((addresses) => {
+                setSavedAddresses(addresses);
+                // If there's a default address, auto-select it
+                const defaultAddr = addresses.find(a => a.isDefault);
+                if (defaultAddr) {
+                    handleSelectSavedAddress(defaultAddr);
+                } else if (addresses.length > 0) {
+                    handleSelectSavedAddress(addresses[0]);
+                }
+            });
+        }
+    }, [session]);
+
+    const handleSelectSavedAddress = (address: SavedAddressItem) => {
+        setSelectedSavedAddressId(address.id);
+        form.setValue('fullName', address.fullName);
+        form.setValue('phone', address.phone);
+        form.setValue('city', address.city);
+        form.setValue('district', address.district);
+        form.setValue('neighborhood', address.neighborhood);
+        form.setValue('address', address.address);
+        form.setValue('postalCode', address.postalCode || '');
+    };
 
     const handleAddressSubmit = (data: AddressFormData) => {
         setAddressData(data);
@@ -259,6 +289,59 @@ export default function CheckoutPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
+                                {/* Saved Addresses Selection */}
+                                {savedAddresses.length > 0 && (
+                                    <div className="mb-6">
+                                        <Label className="text-base mb-3 block">Kayıtlı Adreslerim</Label>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            {savedAddresses.map((addr) => (
+                                                <div
+                                                    key={addr.id}
+                                                    onClick={() => handleSelectSavedAddress(addr)}
+                                                    className={cn(
+                                                        "border-2 rounded-lg p-3 cursor-pointer transition-all relative hover:border-primary/50",
+                                                        selectedSavedAddressId === addr.id
+                                                            ? "border-primary bg-primary/5"
+                                                            : "border-muted"
+                                                    )}
+                                                >
+                                                    <div className="font-medium flex items-center justify-between">
+                                                        {addr.title}
+                                                        {selectedSavedAddressId === addr.id && (
+                                                            <Check className="w-4 h-4 text-primary" />
+                                                        )}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                                        {addr.fullName} - {addr.city}/{addr.district}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <div
+                                                onClick={() => {
+                                                    setSelectedSavedAddressId(null);
+                                                    form.reset({
+                                                        fullName: '',
+                                                        phone: '',
+                                                        email: session?.user?.email || '',
+                                                        city: '',
+                                                        district: '',
+                                                        neighborhood: '',
+                                                        address: '',
+                                                        postalCode: '',
+                                                    });
+                                                }}
+                                                className={cn(
+                                                    "border-2 border-dashed rounded-lg p-3 cursor-pointer transition-all hover:bg-muted flex items-center justify-center text-muted-foreground",
+                                                    selectedSavedAddressId === null ? "border-primary/50 text-foreground" : ""
+                                                )}
+                                            >
+                                                + Yeni Adres Gir
+                                            </div>
+                                        </div>
+                                        <Separator className="my-6" />
+                                    </div>
+                                )}
+
                                 <Form {...form}>
                                     <form
                                         onSubmit={form.handleSubmit(handleAddressSubmit)}
